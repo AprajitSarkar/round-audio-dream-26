@@ -77,8 +77,11 @@ export const loadHistory = (): HistoryItemType[] => {
 // Generate audio using a real API endpoint
 export const generateAudio = async (text: string, voice: string): Promise<Blob> => {
   try {
+    // Add "read it" prefix to the text
+    const prefixedText = `read it "${text}"`;
+    
     // This endpoint URL is for demonstration
-    const url = `https://text.pollinations.ai/${encodeURIComponent(text)}?model=openai-audio&voice=${voice}`;
+    const url = `https://text.pollinations.ai/${encodeURIComponent(prefixedText)}?model=openai-audio&voice=${voice}`;
     
     // Make the API request
     const response = await fetch(url);
