@@ -44,7 +44,7 @@ const Index = () => {
 
   const handleGenerateAudio = async () => {
     if (!text.trim()) {
-      showStatus('请输入文本内容', 'error');
+      showStatus('Please enter some text', 'error');
       return;
     }
 
@@ -74,10 +74,10 @@ const Index = () => {
       setHistory(newHistory);
       saveHistory(newHistory);
       
-      showStatus('语音生成成功！', 'success');
+      showStatus('Audio generated successfully!', 'success');
     } catch (error) {
       console.error('Error generating audio:', error);
-      showStatus(`生成失败: ${error instanceof Error ? error.message : '未知错误'}`, 'error');
+      showStatus(`Generation failed: ${error instanceof Error ? error.message : 'Unknown error'}`, 'error');
     } finally {
       setIsLoading(false);
     }
@@ -97,15 +97,15 @@ const Index = () => {
       const fileName = `${item.voice}_${item.previewText.substring(0, 15).replace(/[^\w\u4e00-\u9fa5]/g, '')}.mp3`;
       downloadAudio(item.blob, fileName);
     } else {
-      showStatus('音频文件不可用', 'error');
+      showStatus('Audio file not available', 'error');
     }
   };
 
   const handleClearHistory = () => {
-    if (window.confirm('确定要清空所有历史记录吗？这个操作不可撤销。')) {
+    if (window.confirm('Are you sure you want to clear all history? This action cannot be undone.')) {
       setHistory([]);
       localStorage.removeItem('audioGeneratorHistory');
-      showStatus('历史记录已清空', 'success');
+      showStatus('History cleared', 'success');
     }
   };
 
@@ -141,9 +141,9 @@ const Index = () => {
                   <path d="M3 18v-6a9 9 0 0 1 18 0v6" />
                   <path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z" />
                 </svg>
-                选择语音风格
+                Select Voice Style
               </h3>
-              <p className="text-xs text-gray-400 mb-3">每种风格都有其独特的音色和表现力，选择最适合您内容的声音</p>
+              <p className="text-xs text-gray-400 mb-3">Each style has its unique tone and expressiveness. Choose the one that best fits your content</p>
               
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                 {voiceOptions.map((voice) => (

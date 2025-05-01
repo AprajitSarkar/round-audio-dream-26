@@ -9,7 +9,7 @@ interface TextInputProps {
 
 const TextInput: React.FC<TextInputProps> = ({ value, onChange }) => {
   const [charCount, setCharCount] = useState(0);
-  const [duration, setDuration] = useState('0 秒');
+  const [duration, setDuration] = useState('0 seconds');
   const CHARS_PER_MINUTE = 150; // Average speaking speed
 
   useEffect(() => {
@@ -22,17 +22,17 @@ const TextInput: React.FC<TextInputProps> = ({ value, onChange }) => {
     let durationText;
     
     if (durationMinutes < 1/60) {
-      durationText = '不到1秒';
+      durationText = 'less than 1 second';
     } else if (durationMinutes < 1) {
       const seconds = Math.round(durationMinutes * 60);
-      durationText = `${seconds} 秒`;
+      durationText = `${seconds} seconds`;
     } else {
       const minutes = Math.floor(durationMinutes);
       const seconds = Math.round((durationMinutes - minutes) * 60);
       if (seconds === 0) {
-        durationText = `${minutes} 分钟`;
+        durationText = `${minutes} minute${minutes > 1 ? 's' : ''}`;
       } else {
-        durationText = `${minutes} 分钟 ${seconds} 秒`;
+        durationText = `${minutes} minute${minutes > 1 ? 's' : ''} ${seconds} second${seconds > 1 ? 's' : ''}`;
       }
     }
     
@@ -65,18 +65,18 @@ const TextInput: React.FC<TextInputProps> = ({ value, onChange }) => {
           <path d="M12 12v6" />
           <path d="M17 3H7a2 2 0 0 0-2 2v3a9 9 0 0 0 14 0V5a2 2 0 0 0-2-2Z" />
         </svg>
-        输入文本
+        Enter Text
       </h3>
       <div className="relative">
         <Textarea
-          placeholder="输入文本，使用AI回复生成对话..."
+          placeholder="Enter text to convert to speech..."
           className="min-h-32 bg-muted resize-y rounded-lg border-border focus:border-accent"
           value={value}
           onChange={(e) => onChange(e.target.value)}
           onKeyDown={handleKeyDown}
         />
         <div className="absolute bottom-2 right-2 text-xs text-gray-500 bg-background/80 backdrop-blur-sm px-2 py-1 rounded">
-          {charCount} 字符
+          {charCount} characters
         </div>
       </div>
       <div className="flex justify-between text-xs text-gray-400">
@@ -94,10 +94,10 @@ const TextInput: React.FC<TextInputProps> = ({ value, onChange }) => {
             <circle cx="12" cy="12" r="10" />
             <polyline points="12 6 12 12 16 14" />
           </svg>
-          估计时长: {duration}
+          Estimated duration: {duration}
         </div>
         <div className="flex items-center">
-          <span>快捷键:</span>
+          <span>Shortcut:</span>
           <kbd className="ml-1 px-1 py-0.5 text-xs bg-muted rounded">Ctrl</kbd>
           <span className="mx-1">+</span>
           <kbd className="px-1 py-0.5 text-xs bg-muted rounded">Enter</kbd>

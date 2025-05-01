@@ -16,14 +16,14 @@ export interface HistoryItemType {
 }
 
 export const voiceOptions: VoiceOption[] = [
-  { id: 'alloy', name: 'Alloy', description: '平衡中性', color: '#4F46E5' },
-  { id: 'echo', name: 'Echo', description: '深沉有力', color: '#6366F1' },
-  { id: 'fable', name: 'Fable', description: '温暖讲述', color: '#8B5CF6' },
-  { id: 'onyx', name: 'Onyx', description: '威严庄重', color: '#333333' },
-  { id: 'nova', name: 'Nova', description: '友好专业', color: '#10B981' },
-  { id: 'shimmer', name: 'Shimmer', description: '轻快明亮', color: '#60A5FA' },
-  { id: 'coral', name: 'Coral', description: '温柔平静', color: '#F87171' },
-  { id: 'verse', name: 'Verse', description: '生动诗意', color: '#FBBF24' }
+  { id: 'alloy', name: 'Alloy', description: 'Balanced Neutral', color: '#4F46E5' },
+  { id: 'echo', name: 'Echo', description: 'Deep Powerful', color: '#6366F1' },
+  { id: 'fable', name: 'Fable', description: 'Warm Narrative', color: '#8B5CF6' },
+  { id: 'onyx', name: 'Onyx', description: 'Dignified Serious', color: '#333333' },
+  { id: 'nova', name: 'Nova', description: 'Friendly Professional', color: '#10B981' },
+  { id: 'shimmer', name: 'Shimmer', description: 'Light Bright', color: '#60A5FA' },
+  { id: 'coral', name: 'Coral', description: 'Gentle Calm', color: '#F87171' },
+  { id: 'verse', name: 'Verse', description: 'Vivid Poetic', color: '#FBBF24' }
 ];
 
 // Function to download an audio blob
