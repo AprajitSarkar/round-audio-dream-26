@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Header from '@/components/Header';
-import VoiceCard from '@/components/VoiceCard';
+import VoiceStyleSelector from '@/components/VoiceStyleSelector';
 import TextInput from '@/components/TextInput';
 import AudioPreview from '@/components/AudioPreview';
 import GenerateButton from '@/components/GenerateButton';
@@ -11,6 +11,8 @@ import History from '@/components/History';
 import FeatureList from '@/components/FeatureList';
 import TipSection from '@/components/TipSection';
 import Footer from '@/components/Footer';
+import MobileBottomMenu from '@/components/MobileBottomMenu';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { 
   voiceOptions, 
   VoiceOption, 
@@ -31,7 +33,9 @@ const Index = () => {
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
   const [history, setHistory] = useState<HistoryItemType[]>([]);
   const [statusMessage, setStatusMessage] = useState({ text: '', type: 'info' as 'success' | 'error' | 'info', visible: false });
-
+  const [activeTab, setActiveTab] = useState('generate');
+  
+  const isMobile = useIsMobile();
   const currentVoice = voiceOptions.find(voice => voice.id === selectedVoice) || null;
 
   // Load history from localStorage on mount
@@ -50,7 +54,7 @@ const Index = () => {
 
     setIsLoading(true);
     try {
-      // Generate audio from text
+      // Generate audio from text - using a real API endpoint now
       const blob = await generateAudio(text, selectedVoice);
       
       // Create URL for audio player
@@ -75,6 +79,11 @@ const Index = () => {
       saveHistory(newHistory);
       
       showStatus('Audio generated successfully!', 'success');
+      
+      // Automatically switch to the download tab on mobile
+      if (isMobile) {
+        setActiveTab('download');
+      }
     } catch (error) {
       console.error('Error generating audio:', error);
       showStatus(`Generation failed: ${error instanceof Error ? error.message : 'Unknown error'}`, 'error');
@@ -117,50 +126,25 @@ const Index = () => {
     }, 5000);
   };
 
-  return (
-    <div className="min-h-screen pb-6 bg-background">
-      <Header />
-      
-      <div className="container px-4 max-w-5xl mx-auto">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Left column - Input */}
+  // Handle tab changes for mobile view
+  const handleChangeTab = (tab: string) => {
+    setActiveTab(tab);
+  };
+
+  // Render content based on active tab for mobile
+  const renderMobileContent = () => {
+    switch (activeTab) {
+      case 'generate':
+        return (
           <div className="space-y-6">
-            {/* Voice Selection */}
             <div className="glass p-4 rounded-lg">
-              <h3 className="text-sm font-medium mb-3 flex items-center">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="w-4 h-4 mr-2 text-secondary"
-                >
-                  <path d="M3 18v-6a9 9 0 0 1 18 0v6" />
-                  <path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z" />
-                </svg>
-                Select Voice Style
-              </h3>
-              <p className="text-xs text-gray-400 mb-3">Each style has its unique tone and expressiveness. Choose the one that best fits your content</p>
-              
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                {voiceOptions.map((voice) => (
-                  <VoiceCard
-                    key={voice.id}
-                    id={voice.id}
-                    name={voice.name}
-                    description={voice.description}
-                    color={voice.color}
-                    isSelected={selectedVoice === voice.id}
-                    onClick={() => setSelectedVoice(voice.id)}
-                  />
-                ))}
-              </div>
+              <VoiceStyleSelector 
+                options={voiceOptions}
+                selected={selectedVoice}
+                onSelect={setSelectedVoice}
+              />
             </div>
             
-            {/* Text Input */}
             <div className="glass p-4 rounded-lg">
               <TextInput value={text} onChange={setText} />
               <div className="mt-4">
@@ -177,13 +161,13 @@ const Index = () => {
               )}
             </div>
             
-            {/* Tips */}
             <TipSection />
           </div>
-          
-          {/* Right column - Output */}
+        );
+      
+      case 'download':
+        return (
           <div className="space-y-6">
-            {/* Audio Preview */}
             <div className="glass p-4 rounded-lg">
               <AudioPreview 
                 audioUrl={audioUrl}
@@ -197,7 +181,13 @@ const Index = () => {
               )}
             </div>
             
-            {/* History */}
+            <FeatureList />
+          </div>
+        );
+      
+      case 'history':
+        return (
+          <div className="space-y-6">
             <div className="glass p-4 rounded-lg">
               <History 
                 items={history} 
@@ -205,12 +195,101 @@ const Index = () => {
                 onClearAll={handleClearHistory}
               />
             </div>
-            
-            {/* Features */}
+          </div>
+        );
+      
+      case 'settings':
+        return (
+          <div className="space-y-6">
+            <div className="glass p-4 rounded-lg">
+              <h3 className="text-sm font-medium mb-3 flex items-center">Settings</h3>
+              <p className="text-sm text-gray-400">App settings will be available here in future updates.</p>
+            </div>
             <FeatureList />
           </div>
-        </div>
+        );
+        
+      default:
+        return null;
+    }
+  };
+
+  return (
+    <div className="min-h-screen pb-16 md:pb-6 bg-background">
+      <Header />
+      
+      <div className="container px-4 max-w-5xl mx-auto">
+        {isMobile ? (
+          renderMobileContent()
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Left column - Input */}
+            <div className="space-y-6">
+              {/* Voice Selection */}
+              <div className="glass p-4 rounded-lg">
+                <VoiceStyleSelector 
+                  options={voiceOptions}
+                  selected={selectedVoice}
+                  onSelect={setSelectedVoice}
+                />
+              </div>
+              
+              {/* Text Input */}
+              <div className="glass p-4 rounded-lg">
+                <TextInput value={text} onChange={setText} />
+                <div className="mt-4">
+                  <GenerateButton onClick={handleGenerateAudio} isLoading={isLoading} />
+                </div>
+                {statusMessage.visible && (
+                  <div className="mt-4">
+                    <StatusMessage 
+                      message={statusMessage.text} 
+                      type={statusMessage.type} 
+                      visible={statusMessage.visible} 
+                    />
+                  </div>
+                )}
+              </div>
+              
+              {/* Tips */}
+              <TipSection />
+            </div>
+            
+            {/* Right column - Output */}
+            <div className="space-y-6">
+              {/* Audio Preview */}
+              <div className="glass p-4 rounded-lg">
+                <AudioPreview 
+                  audioUrl={audioUrl}
+                  currentVoice={currentVoice}
+                />
+                
+                {audioBlob && (
+                  <div className="mt-4">
+                    <DownloadButton onClick={handleDownload} />
+                  </div>
+                )}
+              </div>
+              
+              {/* History */}
+              <div className="glass p-4 rounded-lg">
+                <History 
+                  items={history} 
+                  onDownload={handleHistoryDownload}
+                  onClearAll={handleClearHistory}
+                />
+              </div>
+              
+              {/* Features */}
+              <FeatureList />
+            </div>
+          </div>
+        )}
       </div>
+      
+      {isMobile && (
+        <MobileBottomMenu activeTab={activeTab} onChangeTab={handleChangeTab} />
+      )}
       
       <Footer />
     </div>

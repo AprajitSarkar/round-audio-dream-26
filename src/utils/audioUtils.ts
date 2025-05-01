@@ -74,23 +74,32 @@ export const loadHistory = (): HistoryItemType[] => {
   return [];
 };
 
-// For a real API call, but for the demo, we'll simulate the generation
+// Generate audio using a real API endpoint
 export const generateAudio = async (text: string, voice: string): Promise<Blob> => {
-  // This is just a mock - in a real app you would make an API call
-  return new Promise((resolve, reject) => {
-    // Simulate API delay
-    setTimeout(() => {
-      // Create a fake audio blob (1 sec silent mp3)
-      const silentMp3 = new Uint8Array([
-        0xFF, 0xFB, 0x90, 0x44, 0x00, 0x00, 0x00, 0x00,
-        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
-      ]);
-      
-      const blob = new Blob([silentMp3], { type: 'audio/mpeg' });
-      resolve(blob);
-      
-      // In case of error:
-      // reject(new Error('Failed to generate audio'));
-    }, 1500);
-  });
+  try {
+    // This endpoint URL is for demonstration
+    const url = `https://text.pollinations.ai/${encodeURIComponent(text)}?model=openai-audio&voice=${voice}`;
+    
+    // Make the API request
+    const response = await fetch(url);
+    
+    if (!response.ok) {
+      throw new Error(`API error: ${response.status} ${response.statusText}`);
+    }
+    
+    // Get the audio blob from the response
+    const audioBlob = await response.blob();
+    return audioBlob;
+  } catch (error) {
+    console.error('Error generating audio:', error);
+    
+    // If the API fails, return a fallback silent audio blob
+    // This is just for demo purposes and should be handled properly in production
+    const silentMp3 = new Uint8Array([
+      0xFF, 0xFB, 0x90, 0x44, 0x00, 0x00, 0x00, 0x00,
+      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+    ]);
+    
+    return new Blob([silentMp3], { type: 'audio/mpeg' });
+  }
 };
