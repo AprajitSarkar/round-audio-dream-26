@@ -17,13 +17,22 @@ export interface HistoryItemType {
 
 export const voiceOptions: VoiceOption[] = [
   { id: 'alloy', name: 'Alloy', description: 'Balanced Neutral', color: '#4F46E5' },
-  { id: 'echo', name: 'Echo', description: 'Deep Powerful', color: '#6366F1' },
-  { id: 'fable', name: 'Fable', description: 'Warm Narrative', color: '#8B5CF6' },
-  { id: 'onyx', name: 'Onyx', description: 'Dignified Serious', color: '#333333' },
-  { id: 'nova', name: 'Nova', description: 'Friendly Professional', color: '#10B981' },
-  { id: 'shimmer', name: 'Shimmer', description: 'Light Bright', color: '#60A5FA' },
-  { id: 'coral', name: 'Coral', description: 'Gentle Calm', color: '#F87171' },
-  { id: 'verse', name: 'Verse', description: 'Vivid Poetic', color: '#FBBF24' }
+  { id: 'echo', name: 'Echo', description: 'Deep and powerful', color: '#6366F1' },
+  { id: 'fable', name: 'Fable', description: 'Warm narration', color: '#8B5CF6' },
+  { id: 'onyx', name: 'Onyx', description: 'Majestic and solemn', color: '#333333' },
+  { id: 'nova', name: 'Nova', description: 'Friendly and professional', color: '#10B981' },
+  { id: 'shimmer', name: 'Shimmer', description: 'Light and bright', color: '#60A5FA' },
+  { id: 'coral', name: 'Coral', description: 'Gentle and calm', color: '#F87171' },
+  { id: 'verse', name: 'Verse', description: 'Vivid Poetry', color: '#FBBF24' },
+  { id: 'ballad', name: 'Ballad', description: 'Lyrical and Soft', color: '#A78BFA' },
+  { id: 'ash', name: 'Ash', description: 'Thinking calmly', color: '#4B5563' },
+  { id: 'sage', name: 'Sage', description: 'Wisdom and sophistication', color: '#059669' },
+  { id: 'amuch', name: 'Amuch', description: 'Full and natural', color: '#F59E0B' },
+  { id: 'aster', name: 'Aster', description: 'Clear and direct', color: '#2563EB' },
+  { id: 'brook', name: 'Brook', description: 'Smooth and comfortable', color: '#3B82F6' },
+  { id: 'clover', name: 'Clover', description: 'Lively and youthful', color: '#EC4899' },
+  { id: 'dan', name: 'Dan', description: 'Steady male voice', color: '#1F2937' },
+  { id: 'elan', name: 'Elan', description: 'Elegant and fluent', color: '#7C3AED' }
 ];
 
 // Function to download an audio blob
