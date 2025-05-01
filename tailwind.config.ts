@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -61,6 +62,11 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
+				},
+				glow: {
+					cyan: '#00f3ff',
+					purple: '#a855f7',
+					blue: '#3d3dff'
 				}
 			},
 			borderRadius: {
@@ -84,11 +90,68 @@ export default {
 					to: {
 						height: '0'
 					}
+				},
+				'glow': {
+					'0%, 100%': { 
+						'box-shadow': '0 0 5px rgba(0, 243, 255, 0.5), 0 0 20px rgba(0, 243, 255, 0.2)'
+					},
+					'50%': { 
+						'box-shadow': '0 0 15px rgba(0, 243, 255, 0.8), 0 0 30px rgba(0, 243, 255, 0.4)'
+					}
+				},
+				'border-pulse': {
+					'0%, 100%': { 
+						'border-color': 'rgba(61, 61, 255, 0.7)'
+					},
+					'50%': { 
+						'border-color': 'rgba(0, 243, 255, 0.7)'
+					}
+				},
+				'border-flow': {
+					'0%': { 
+						'background-position': '0% 50%' 
+					},
+					'50%': { 
+						'background-position': '100% 50%' 
+					},
+					'100%': { 
+						'background-position': '0% 50%' 
+					}
+				},
+				'wave': {
+					'0%': { transform: 'scaleY(0.1)' },
+					'50%': { transform: 'scaleY(1)' },
+					'100%': { transform: 'scaleY(0.1)' }
+				},
+				'fade-in': {
+					'0%': { 
+						opacity: '0',
+						transform: 'translateY(10px)'
+					},
+					'100%': { 
+						opacity: '1',
+						transform: 'translateY(0)'
+					}
 				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
-				'accordion-up': 'accordion-up 0.2s ease-out'
+				'accordion-up': 'accordion-up 0.2s ease-out',
+				'glow': 'glow 2s ease-in-out infinite',
+				'border-pulse': 'border-pulse 2s infinite',
+				'border-flow': 'border-flow 3s ease infinite',
+				'fade-in': 'fade-in 0.5s ease-out forwards',
+				'wave-1': 'wave 1.2s infinite ease-in-out',
+				'wave-2': 'wave 1.2s infinite ease-in-out 0.1s',
+				'wave-3': 'wave 1.2s infinite ease-in-out 0.2s',
+				'wave-4': 'wave 1.2s infinite ease-in-out 0.3s',
+				'wave-5': 'wave 1.2s infinite ease-in-out 0.4s'
+			},
+			backgroundImage: {
+				'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
+				'gradient-conic': 'conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))',
+				'glow-cyan-purple': 'linear-gradient(45deg, #00f3ff 30%, #a855f7 70%)',
+				'glow-btn': 'linear-gradient(90deg, #3d3dff, #00f3ff)'
 			}
 		}
 	},
