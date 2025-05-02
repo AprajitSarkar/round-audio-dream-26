@@ -6,6 +6,13 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import VoiceCard from '@/components/VoiceCard';
 import { Button } from '@/components/ui/button';
 import { VoiceOption } from '@/utils/audioUtils';
+import { 
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface VoiceStyleSelectorProps {
   options: VoiceOption[];
@@ -20,12 +27,18 @@ const VoiceStyleSelector: React.FC<VoiceStyleSelectorProps> = ({
 }) => {
   const isMobile = useIsMobile();
   const [isOpen, setIsOpen] = useState(!isMobile);
+  const [category, setCategory] = useState('all');
   
   const currentVoice = options.find(voice => voice.id === selected) || options[0];
 
   const handleToggle = () => {
     setIsOpen(!isOpen);
   };
+
+  // Filter voices based on category
+  const displayedVoices = category === 'all' ? 
+    options : 
+    options.slice(0, 8); // Show only the first 8 voices for "popular" category
 
   return (
     <div className="space-y-3">
@@ -59,14 +72,26 @@ const VoiceStyleSelector: React.FC<VoiceStyleSelectorProps> = ({
             </Button>
           )}
         </div>
-        <p className="text-xs text-gray-400 mb-3">Each style has its unique tone and expressiveness. Choose the one that best fits your content</p>
+        <div className="flex justify-between items-center">
+          <p className="text-xs text-gray-400">Each style has its unique tone and expressiveness.</p>
+          
+          <Select value={category} onValueChange={setCategory}>
+            <SelectTrigger className="w-[120px] h-8 text-xs">
+              <SelectValue placeholder="Show" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Voices</SelectItem>
+              <SelectItem value="popular">Popular</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
       {isMobile ? (
         <Collapsible open={isOpen} onOpenChange={setIsOpen} className="w-full">
           <CollapsibleContent>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-1">
-              {options.map((voice) => (
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mt-1">
+              {displayedVoices.map((voice) => (
                 <VoiceCard
                   key={voice.id}
                   id={voice.id}
@@ -81,8 +106,8 @@ const VoiceStyleSelector: React.FC<VoiceStyleSelectorProps> = ({
           </CollapsibleContent>
         </Collapsible>
       ) : (
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-          {options.map((voice) => (
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
+          {displayedVoices.map((voice) => (
             <VoiceCard
               key={voice.id}
               id={voice.id}
