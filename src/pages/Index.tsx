@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
 import VoiceStyleSelector from '@/components/VoiceStyleSelector';
 import TextInput from '@/components/TextInput';
@@ -13,9 +14,15 @@ import TipSection from '@/components/TipSection';
 import Footer from '@/components/Footer';
 import MobileBottomMenu from '@/components/MobileBottomMenu';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useUser } from '@/contexts/UserContext';
+import { Button } from '@/components/ui/button';
+import { toast } from '@/hooks/use-toast';
+import { showInterstitialAd } from '@/lib/adService';
+import { updateUserCredits, addToHistory } from '@/lib/userService';
+
 import { 
   voiceOptions, 
-  VoiceOption, 
+  VoiceOption,
   HistoryItemType, 
   downloadAudio, 
   saveHistory, 
@@ -34,12 +41,19 @@ const Index = () => {
   const [history, setHistory] = useState<HistoryItemType[]>([]);
   const [statusMessage, setStatusMessage] = useState({ text: '', type: 'info' as 'success' | 'error' | 'info', visible: false });
   const [activeTab, setActiveTab] = useState('generate');
+  const [hasGeneratedFirst, setHasGeneratedFirst] = useState(false);
   
   const isMobile = useIsMobile();
   const currentVoice = voiceOptions.find(voice => voice.id === selectedVoice) || null;
-
-  // Load history from localStorage on mount
+  const { user, refreshUserData } = useUser();
+  const navigate = useNavigate();
+  
+  // Check local storage for first generation
   useEffect(() => {
+    const generated = localStorage.getItem('hasGeneratedFirst') === 'true';
+    setHasGeneratedFirst(generated);
+    
+    // Load history from localStorage on mount
     const savedHistory = loadHistory();
     if (savedHistory && savedHistory.length > 0) {
       setHistory(savedHistory.slice(0, MAX_HISTORY_ITEMS));
@@ -51,10 +65,21 @@ const Index = () => {
       showStatus('Please enter some text', 'error');
       return;
     }
+    
+    // Check if this is not the first generation and if user has enough credits
+    if (hasGeneratedFirst && (user?.credits || 0) < 10) {
+      toast({
+        title: "Insufficient Credits",
+        description: "You need 10 credits to generate audio. Go to Credits page to earn more.",
+        variant: "destructive",
+      });
+      navigate('/credits');
+      return;
+    }
 
     setIsLoading(true);
     try {
-      // Generate audio from text - using a real API endpoint now
+      // Generate audio from text
       const blob = await generateAudio(text, selectedVoice);
       
       // Create URL for audio player
@@ -78,7 +103,33 @@ const Index = () => {
       setHistory(newHistory);
       saveHistory(newHistory);
       
+      // If this is not the first generation, deduct credits
+      if (hasGeneratedFirst) {
+        // Deduct 10 credits from user
+        if (user) {
+          const newCredits = (user.credits || 0) - 10;
+          await updateUserCredits(newCredits);
+          await refreshUserData();
+        }
+      } else {
+        // Mark first generation as used
+        localStorage.setItem('hasGeneratedFirst', 'true');
+        setHasGeneratedFirst(true);
+      }
+      
+      // Add to user's generation history in Firebase
+      await addToHistory(text, selectedVoice);
+      
       showStatus('Audio generated successfully!', 'success');
+      
+      // Show interstitial ad occasionally (20% chance)
+      if (Math.random() < 0.2) {
+        try {
+          await showInterstitialAd();
+        } catch (error) {
+          console.error("Error showing interstitial ad:", error);
+        }
+      }
       
       // Automatically switch to the download tab on mobile
       if (isMobile) {
@@ -94,7 +145,7 @@ const Index = () => {
 
   const handleDownload = () => {
     if (audioBlob) {
-      const previewText = text.substring(0, 20).replace(/[^\w\u4e00-\u9fa5]/g, '');
+      const previewText = text.substring(0, 20).replace(/[^\w\u4E00-\u9FA5]/g, '');
       const fileName = `${selectedVoice}_${previewText}.mp3`;
       downloadAudio(audioBlob, fileName);
     }
@@ -103,7 +154,7 @@ const Index = () => {
   const handleHistoryDownload = (id: number) => {
     const item = history.find(h => h.id === id);
     if (item && item.blob) {
-      const fileName = `${item.voice}_${item.previewText.substring(0, 15).replace(/[^\w\u4e00-\u9fa5]/g, '')}.mp3`;
+      const fileName = `${item.voice}_${item.previewText.substring(0, 15).replace(/[^\w\u4E00-\u9FA5]/g, '')}.mp3`;
       downloadAudio(item.blob, fileName);
     } else {
       showStatus('Audio file not available', 'error');
@@ -128,6 +179,10 @@ const Index = () => {
 
   // Handle tab changes for mobile view
   const handleChangeTab = (tab: string) => {
+    if (tab === 'credits' || tab === 'settings') {
+      navigate(`/${tab}`);
+      return;
+    }
     setActiveTab(tab);
   };
 
@@ -162,6 +217,39 @@ const Index = () => {
             </div>
             
             <TipSection />
+            
+            <div className="glass p-4 rounded-lg">
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="text-sm font-medium">Credits</h3>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="text-xs"
+                  onClick={() => navigate("/credits")}
+                >
+                  Get More
+                </Button>
+              </div>
+              
+              <div className="bg-card/50 p-3 rounded-lg flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <div className="h-8 w-8 rounded-full bg-primary/20 flex items-center justify-center">
+                    <span className="font-semibold text-primary">{user?.credits || 0}</span>
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">Available</p>
+                  </div>
+                </div>
+                <div>
+                  <p className="text-xs">
+                    {hasGeneratedFirst 
+                      ? "Each generation costs 10 credits" 
+                      : "First generation is free!"
+                    }
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
         );
       
@@ -198,17 +286,6 @@ const Index = () => {
           </div>
         );
       
-      case 'settings':
-        return (
-          <div className="space-y-6">
-            <div className="glass p-4 rounded-lg">
-              <h3 className="text-sm font-medium mb-3 flex items-center">Settings</h3>
-              <p className="text-sm text-gray-400">App settings will be available here in future updates.</p>
-            </div>
-            <FeatureList />
-          </div>
-        );
-        
       default:
         return null;
     }
@@ -249,6 +326,40 @@ const Index = () => {
                     />
                   </div>
                 )}
+              </div>
+              
+              {/* Credit Status */}
+              <div className="glass p-4 rounded-lg">
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-sm font-medium">Credits</h3>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="text-xs"
+                    onClick={() => navigate("/credits")}
+                  >
+                    Get More
+                  </Button>
+                </div>
+                
+                <div className="bg-card/50 p-3 rounded-lg flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <div className="h-8 w-8 rounded-full bg-primary/20 flex items-center justify-center">
+                      <span className="font-semibold text-primary">{user?.credits || 0}</span>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">Available</p>
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-xs">
+                      {hasGeneratedFirst 
+                        ? "Each generation costs 10 credits" 
+                        : "First generation is free!"
+                      }
+                    </p>
+                  </div>
+                </div>
               </div>
               
               {/* Tips */}
