@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { ChevronDown, ChevronUp } from 'lucide-react';
+import { ChevronDown, ChevronUp, Headphones } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { useIsMobile } from '@/hooks/use-mobile';
 import VoiceCard from '@/components/VoiceCard';
@@ -45,27 +45,15 @@ const VoiceStyleSelector: React.FC<VoiceStyleSelectorProps> = ({
       <div className="flex flex-col space-y-2">
         <div className="flex items-center justify-between">
           <h3 className="text-sm font-medium flex items-center">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="w-4 h-4 mr-2 text-secondary"
-            >
-              <path d="M3 18v-6a9 9 0 0 1 18 0v6" />
-              <path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z" />
-            </svg>
+            <Headphones className="w-4 h-4 mr-2 text-primary" />
             Select Voice Style
           </h3>
           {isMobile && (
             <Button 
-              variant="ghost" 
+              variant="outline" 
               size="sm" 
               onClick={handleToggle} 
-              className="flex items-center text-xs h-8"
+              className="flex items-center text-xs h-8 bg-muted/30 hover:bg-muted/50"
             >
               {currentVoice.name}
               {isOpen ? <ChevronUp className="w-4 h-4 ml-1" /> : <ChevronDown className="w-4 h-4 ml-1" />}
@@ -76,7 +64,7 @@ const VoiceStyleSelector: React.FC<VoiceStyleSelectorProps> = ({
           <p className="text-xs text-gray-400">Each style has its unique tone and expressiveness.</p>
           
           <Select value={category} onValueChange={setCategory}>
-            <SelectTrigger className="w-[120px] h-8 text-xs">
+            <SelectTrigger className="w-[120px] h-8 text-xs bg-muted/30 hover:bg-muted/50">
               <SelectValue placeholder="Show" />
             </SelectTrigger>
             <SelectContent>
@@ -106,7 +94,7 @@ const VoiceStyleSelector: React.FC<VoiceStyleSelectorProps> = ({
           </CollapsibleContent>
         </Collapsible>
       ) : (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
           {displayedVoices.map((voice) => (
             <VoiceCard
               key={voice.id}
