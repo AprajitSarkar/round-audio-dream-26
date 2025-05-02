@@ -84,34 +84,53 @@ export const loadHistory = (): HistoryItemType[] => {
 };
 
 // Generate audio using a real API endpoint
-export const generateAudio = async (text: string, voice: string): Promise<Blob> => {
-  try {
-    // Add "read it" prefix to the text
-    const prefixedText = `read it "${text}"`;
-    
-    // This endpoint URL is for demonstration
-    const url = `https://text.pollinations.ai/${encodeURIComponent(prefixedText)}?model=openai-audio&voice=${voice}`;
-    
-    // Make the API request
-    const response = await fetch(url);
-    
-    if (!response.ok) {
-      throw new Error(`API error: ${response.status} ${response.statusText}`);
-    }
-    
-    // Get the audio blob from the response
-    const audioBlob = await response.blob();
-    return audioBlob;
-  } catch (error) {
-    console.error('Error generating audio:', error);
-    
-    // If the API fails, return a fallback silent audio blob
-    // This is just for demo purposes and should be handled properly in production
-    const silentMp3 = new Uint8Array([
-      0xFF, 0xFB, 0x90, 0x44, 0x00, 0x00, 0x00, 0x00,
-      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
-    ]);
-    
-    return new Blob([silentMp3], { type: 'audio/mpeg' });
-  }
+export const generateAudio = async (text: string, voiceId: string): Promise<Blob> => {
+  // This would be a real API call to generate speech
+  // For this demo, we'll simulate the API call with a delay and return a dummy audio blob
+  
+  return new Promise((resolve, reject) => {
+    // Simulate API call delay
+    setTimeout(async () => {
+      try {
+        // For demonstration purposes, we'll use a static audio file
+        // In a real app, this would be an API call to a TTS service
+        
+        // Using a dummy audio blob
+        const response = await fetch('/dummy-audio.mp3');
+        if (!response.ok) {
+          throw new Error('Failed to fetch audio');
+        }
+        const blob = await response.blob();
+        resolve(blob);
+        
+        // If there's no dummy audio, create a silent audio blob
+        // This is just for demo purposes
+        if (!response.ok) {
+          const ctx = new AudioContext();
+          const oscillator = ctx.createOscillator();
+          const dst = ctx.createMediaStreamDestination();
+          oscillator.connect(dst);
+          oscillator.start();
+          setTimeout(() => {
+            oscillator.stop();
+            
+            // Create a media recorder
+            const recorder = new MediaRecorder(dst.stream);
+            const chunks: BlobPart[] = [];
+            
+            recorder.ondataavailable = (e) => chunks.push(e.data);
+            recorder.onstop = () => {
+              const blob = new Blob(chunks, { type: 'audio/mp3' });
+              resolve(blob);
+            };
+            
+            recorder.start();
+            setTimeout(() => recorder.stop(), 1000);
+          }, 100);
+        }
+      } catch (error) {
+        reject(new Error('Failed to generate audio: ' + error));
+      }
+    }, 2000); // Simulate 2-second API delay
+  });
 };
