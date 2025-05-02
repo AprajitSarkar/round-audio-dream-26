@@ -70,12 +70,12 @@ const TextInput: React.FC<TextInputProps> = ({ value, onChange }) => {
       <div className="relative">
         <Textarea
           placeholder="Enter text to convert to speech..."
-          className="min-h-32 bg-muted resize-y rounded-lg border-border focus:border-accent"
+          className="min-h-32 bg-muted/40 resize-y rounded-xl border-border/50 focus:border-accent"
           value={value}
           onChange={(e) => onChange(e.target.value)}
           onKeyDown={handleKeyDown}
         />
-        <div className="absolute bottom-2 right-2 text-xs text-gray-500 bg-background/80 backdrop-blur-sm px-2 py-1 rounded">
+        <div className="absolute bottom-2 right-2 text-xs text-gray-500 bg-background/80 backdrop-blur-sm px-2 py-1 rounded-lg">
           {charCount} characters
         </div>
       </div>

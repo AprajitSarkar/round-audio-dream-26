@@ -19,20 +19,20 @@ const TipSection: React.FC = () => {
           <line x1="12" y1="16" x2="12" y2="12" />
           <line x1="12" y1="8" x2="12.01" y2="8" />
         </svg>
-        <h3 className="text-sm font-medium text-purple-300">使用小技巧</h3>
+        <h3 className="text-sm font-medium text-purple-300">Usage Tips</h3>
       </div>
       <ul className="space-y-1.5">
         <li className="flex text-xs text-purple-200/80">
           <span className="mr-2">•</span>
-          <span>输入标点符号可增加语音的自然停顿和语调变化</span>
+          <span>Use punctuation for natural pauses and intonation changes</span>
         </li>
         <li className="flex text-xs text-purple-200/80">
           <span className="mr-2">•</span>
-          <span>不同语音风格适合不同场景，可以尝试多种风格找到最适合的</span>
+          <span>Different voice styles suit different scenarios - experiment to find the best one</span>
         </li>
         <li className="flex text-xs text-purple-200/80">
           <span className="mr-2">•</span>
-          <span>大段文本可划分为多个段落，生成后再合并，效果更佳</span>
+          <span>For longer texts, divide into multiple paragraphs for better results</span>
         </li>
       </ul>
     </div>
