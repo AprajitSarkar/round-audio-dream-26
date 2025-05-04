@@ -2,9 +2,11 @@
 // Alternative import approach
 import { Capacitor } from '@capacitor/core';
 import '@admob-plus/capacitor';
+import { toast } from "@/components/ui/sonner";
 
 // Access AdMob plugin through Capacitor.Plugins
-const AdMob = Capacitor.Plugins.AdMob;
+// Using type assertion to access Plugins property
+const AdMob = (Capacitor as any).Plugins.AdMob;
 
 const REWARDED_AD_UNIT = 'ca-app-pub-3279473081670891/7308583729';
 const INTERSTITIAL_AD_UNIT = 'ca-app-pub-3279473081670891/5078157857';
