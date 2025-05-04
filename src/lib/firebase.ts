@@ -1,6 +1,12 @@
 
 import { initializeApp } from "firebase/app";
-import { getFirestore, enableIndexedDbPersistence, connectFirestoreEmulator, CACHE_SIZE_UNLIMITED } from "firebase/firestore";
+import { 
+  getFirestore, 
+  enableIndexedDbPersistence, 
+  connectFirestoreEmulator, 
+  CACHE_SIZE_UNLIMITED,
+  clearIndexedDbPersistence 
+} from "firebase/firestore";
 import { getAuth, connectAuthEmulator } from "firebase/auth";
 
 const firebaseConfig = {
@@ -17,11 +23,6 @@ const firebaseConfig = {
 export const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = getFirestore(app);
-
-// Set up cache size to unlimited for better offline support
-db.settings({
-  cacheSizeBytes: CACHE_SIZE_UNLIMITED
-});
 
 // Enable offline persistence with better error handling
 try {
@@ -51,7 +52,7 @@ const connectionMonitoring = () => {
   window.addEventListener('online', () => {
     console.log('Browser is online, reconnecting to Firebase...');
     // Force a refresh of any cached data when coming back online
-    db.clearPersistence().then(() => {
+    clearIndexedDbPersistence(db).then(() => {
       console.log("Firebase cache cleared for fresh data");
     }).catch(err => {
       console.warn("Could not clear persistence:", err);
