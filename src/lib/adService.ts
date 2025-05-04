@@ -1,6 +1,5 @@
 
-import { AdMob, RewardAdOptions, InterstitialAdOptions, AdLoadInfo, RewardAdPluginEvents, InterstitialAdPluginEvents } from '@admob-plus/capacitor';
-import { Toast } from '@/components/ui/use-toast';
+import { AdMobPlus as AdMob } from '@admob-plus/capacitor';
 import { toast } from '@/hooks/use-toast';
 
 const REWARDED_AD_UNIT = 'ca-app-pub-3279473081670891/7308583729';
@@ -24,13 +23,13 @@ export const showRewardedAd = async (): Promise<boolean> => {
   return new Promise(async (resolve) => {
     try {
       // Create reward ad options
-      const options: RewardAdOptions = {
+      const options = {
         adId: REWARDED_AD_UNIT,
       };
 
       // Set up event listeners
       const rewardedAdRewardHandler = AdMob.addListener(
-        RewardAdPluginEvents.REWARD,
+        'reward',
         () => {
           console.log('User earned reward');
           rewardedAdRewardHandler.remove();
@@ -39,7 +38,7 @@ export const showRewardedAd = async (): Promise<boolean> => {
       );
 
       const rewardedAdCloseHandler = AdMob.addListener(
-        RewardAdPluginEvents.CLOSE,
+        'rewardVideoAdClosed',
         () => {
           console.log('Rewarded ad closed');
           rewardedAdCloseHandler.remove();
@@ -47,7 +46,7 @@ export const showRewardedAd = async (): Promise<boolean> => {
       );
 
       const rewardedAdFailHandler = AdMob.addListener(
-        RewardAdPluginEvents.FAILED_TO_LOAD,
+        'rewardVideoLoadFail',
         (info) => {
           console.error('Failed to load rewarded ad:', info);
           toast({
@@ -81,13 +80,13 @@ export const showInterstitialAd = async (): Promise<boolean> => {
   return new Promise(async (resolve) => {
     try {
       // Create interstitial ad options
-      const options: InterstitialAdOptions = {
+      const options = {
         adId: INTERSTITIAL_AD_UNIT,
       };
 
       // Set up event listeners
       const interstitialAdCloseHandler = AdMob.addListener(
-        InterstitialAdPluginEvents.CLOSE,
+        'interstitialAdDismiss',
         () => {
           console.log('Interstitial ad closed');
           interstitialAdCloseHandler.remove();
@@ -96,7 +95,7 @@ export const showInterstitialAd = async (): Promise<boolean> => {
       );
 
       const interstitialAdFailHandler = AdMob.addListener(
-        InterstitialAdPluginEvents.FAILED_TO_LOAD,
+        'interstitialLoadFail',
         (info) => {
           console.error('Failed to load interstitial ad:', info);
           toast({
