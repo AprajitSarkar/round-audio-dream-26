@@ -68,10 +68,20 @@ export const createUser = async (username: string, customDeviceId?: string): Pro
       
       console.log("User created/updated successfully in Firebase");
       return userData;
-    } catch (firestoreError) {
+    } catch (firestoreError: any) {
       console.error("Firestore operation failed:", firestoreError);
       
-      // Create a local fallback for offline mode
+      if (firestoreError.code === 'unavailable') {
+        console.log("Firebase unavailable, creating local fallback");
+        // Create a local fallback for offline mode
+        localStorage.setItem(`user_${deviceId}`, JSON.stringify(userData));
+        console.log("Saved user data locally as fallback");
+        
+        // Rethrow with the original error code preserved
+        throw firestoreError;
+      }
+      
+      // Create a local fallback anyway
       localStorage.setItem(`user_${deviceId}`, JSON.stringify(userData));
       console.log("Saved user data locally as fallback");
       

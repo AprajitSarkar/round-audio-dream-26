@@ -18,27 +18,35 @@ export const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = getFirestore(app);
 
-// Enable offline persistence
-enableIndexedDbPersistence(db)
-  .catch((err) => {
-    console.error("Firebase persistence error:", err.code, err.message);
-    if (err.code === 'failed-precondition') {
-      console.warn('Multiple tabs open, persistence can only be enabled in one tab at a time.');
-    } else if (err.code === 'unimplemented') {
-      console.warn('The current browser does not support all of the features required to enable persistence');
-    }
-  });
+// Enable offline persistence with better error handling
+try {
+  enableIndexedDbPersistence(db)
+    .then(() => {
+      console.log("Firestore persistence has been enabled successfully");
+    })
+    .catch((err) => {
+      console.error("Firebase persistence error:", err.code, err.message);
+      if (err.code === 'failed-precondition') {
+        console.warn('Multiple tabs open, persistence can only be enabled in one tab at a time.');
+      } else if (err.code === 'unimplemented') {
+        console.warn('The current browser does not support all of the features required to enable persistence');
+      }
+    });
+} catch (e) {
+  console.error("Failed to enable Firestore persistence:", e);
+}
 
 // Debug Firebase connection status
 const connectionMonitoring = () => {
-  console.log("Checking Firebase connection status...");
+  console.log("Setting up Firebase connection monitoring...");
+  
   // Log connection status for debugging
   window.addEventListener('online', () => {
     console.log('Browser is online, reconnecting to Firebase...');
   });
   
   window.addEventListener('offline', () => {
-    console.log('Browser is offline, Firebase operations may fail');
+    console.log('Browser is offline, Firebase operations will use cached data if available');
   });
 };
 

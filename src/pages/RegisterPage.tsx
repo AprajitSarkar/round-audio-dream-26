@@ -15,6 +15,7 @@ const RegisterPage: React.FC = () => {
   const [useCustomId, setUseCustomId] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isOnline, setIsOnline] = useState<boolean>(navigator.onLine);
+  const [errorMessage, setErrorMessage] = useState<string>('');
   const { createNewUser, user, isLoading } = useUser();
   const navigate = useNavigate();
 
@@ -23,6 +24,7 @@ const RegisterPage: React.FC = () => {
     const handleOnline = () => {
       setIsOnline(true);
       toast.success("You're back online!");
+      setErrorMessage('');
     };
     
     const handleOffline = () => {
@@ -65,12 +67,15 @@ const RegisterPage: React.FC = () => {
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
+    setErrorMessage('');
+    
     if (!username.trim()) {
       toast.error("Please enter a username");
       return;
     }
     
     if (!isOnline) {
+      setErrorMessage("You're offline. Please check your internet connection and try again.");
       toast.error("You're offline. Please check your internet connection and try again.");
       return;
     }
@@ -81,6 +86,11 @@ const RegisterPage: React.FC = () => {
       // Use the custom device ID if selected, otherwise use the detected one
       const finalDeviceId = useCustomId && customDeviceId ? customDeviceId : deviceId;
       console.log("Using device ID for registration:", finalDeviceId);
+      
+      // Try to create a local account first when offline
+      if (!navigator.onLine) {
+        throw new Error("Network error: You appear to be offline");
+      }
       
       await createNewUser(username.trim(), finalDeviceId);
       console.log("Account created successfully");
@@ -93,7 +103,16 @@ const RegisterPage: React.FC = () => {
       }, 500);
     } catch (error) {
       console.error("Registration error:", error);
-      toast.error("Failed to create account. Please try again.");
+      
+      // Provide more specific error messages based on the error type
+      if ((error as any)?.code === 'unavailable') {
+        setErrorMessage("Failed to create account. The service is currently unavailable or you're offline.");
+        toast.error("Network error: Unable to connect to our services. Please check your internet connection.");
+      } else {
+        setErrorMessage("Failed to create account. Please try again.");
+        toast.error("Failed to create account. Please try again.");
+      }
+    } finally {
       setIsSubmitting(false);
     }
   };
@@ -187,10 +206,21 @@ const RegisterPage: React.FC = () => {
             </p>
           </div>
           
+          {errorMessage && (
+            <div className="p-3 bg-red-500/10 border border-red-500 rounded-md text-red-500 flex items-center text-sm">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="8" x2="12" y2="12"></line>
+                <line x1="12" y1="16" x2="12.01" y2="16"></line>
+              </svg>
+              {errorMessage}
+            </div>
+          )}
+          
           <Button 
             type="submit" 
             className="cute-btn w-full h-12 text-base font-medium"
-            disabled={isLoading || isSubmitting || !username.trim() || (useCustomId && !customDeviceId.trim()) || !isOnline}
+            disabled={isLoading || isSubmitting || !username.trim() || (useCustomId && !customDeviceId.trim())}
           >
             <span className="relative z-10 flex items-center justify-center">
               {isSubmitting ? (

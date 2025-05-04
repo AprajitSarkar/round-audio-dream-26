@@ -54,9 +54,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       // Check online status
       if (!navigator.onLine) {
-        toast.error("You appear to be offline. Please check your internet connection.");
-        setIsLoading(false);
-        return;
+        throw new Error("You appear to be offline. Please check your internet connection.");
       }
       
       const newUser = await createUser(username, customDeviceId);
@@ -130,6 +128,12 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       if (!user) {
         toast.error("You need to be logged in to change device ID.");
+        setIsLoading(false);
+        return;
+      }
+      
+      if (!navigator.onLine) {
+        toast.error("You need to be online to change device ID.");
         setIsLoading(false);
         return;
       }
