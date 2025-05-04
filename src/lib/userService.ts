@@ -1,6 +1,7 @@
+
 import { doc, getDoc, setDoc, updateDoc, deleteDoc } from "firebase/firestore";
 import { db } from "./firebase";
-import { getDeviceId } from "./deviceUtils";
+import { getDeviceId, setCustomDeviceId } from "./deviceUtils";
 
 export interface UserData {
   deviceId: string;
@@ -21,35 +22,52 @@ export interface UserData {
 
 // Create new user
 export const createUser = async (username: string, customDeviceId?: string): Promise<UserData> => {
-  const deviceId = customDeviceId || await getDeviceId();
-  const today = new Date().toISOString().split('T')[0];
-  
-  const userData: UserData = {
-    deviceId,
-    username,
-    credits: 30, // Initial credits for new users
-    dailyAdsWatched: {
-      date: today,
-      rewarded: 0,
-      interstitial: 0
-    },
-    generationHistory: []
-  };
-  
-  await setDoc(doc(db, "users", deviceId), userData);
-  return userData;
+  try {
+    const deviceId = customDeviceId || await getDeviceId();
+    
+    // If using custom device ID, set it in local storage
+    if (customDeviceId) {
+      setCustomDeviceId(customDeviceId);
+    }
+    
+    const today = new Date().toISOString().split('T')[0];
+    
+    const userData: UserData = {
+      deviceId,
+      username,
+      credits: 30, // Initial credits for new users
+      dailyAdsWatched: {
+        date: today,
+        rewarded: 0,
+        interstitial: 0
+      },
+      generationHistory: []
+    };
+    
+    console.log("Creating user with data:", userData);
+    
+    await setDoc(doc(db, "users", deviceId), userData);
+    console.log("User created successfully in Firebase");
+    return userData;
+  } catch (error) {
+    console.error("Error in createUser:", error);
+    throw error;
+  }
 };
 
 // Get user data
 export const getUserData = async (): Promise<UserData | null> => {
   try {
     const deviceId = await getDeviceId();
+    console.log("Getting user data for device ID:", deviceId);
     const docRef = doc(db, "users", deviceId);
     const docSnap = await getDoc(docRef);
     
     if (docSnap.exists()) {
+      console.log("User data found:", docSnap.data());
       return docSnap.data() as UserData;
     } else {
+      console.log("No user data found for device ID:", deviceId);
       return null;
     }
   } catch (error) {

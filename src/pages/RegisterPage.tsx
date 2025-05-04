@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useUser } from '@/contexts/UserContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Mic, ChevronRight } from 'lucide-react';
+import { Mic, ChevronRight, Loader2 } from 'lucide-react';
 import { getDeviceId } from '@/lib/deviceUtils';
 import { toast } from "sonner";
 
@@ -23,6 +23,7 @@ const RegisterPage: React.FC = () => {
       try {
         const id = await getDeviceId();
         setDeviceId(id);
+        console.log("Device ID fetched:", id);
       } catch (error) {
         console.error("Error fetching device ID:", error);
         toast("Could not retrieve device ID. Using fallback ID.");
@@ -40,15 +41,24 @@ const RegisterPage: React.FC = () => {
     }
     
     try {
+      console.log("Starting registration process...");
       setIsSubmitting(true);
       // Use the custom device ID if selected, otherwise use the detected one
       const finalDeviceId = useCustomId && customDeviceId ? customDeviceId : deviceId;
+      console.log("Using device ID for registration:", finalDeviceId);
+      
       await createNewUser(username.trim(), finalDeviceId);
-      setIsSubmitting(false);
-      navigate('/');
+      console.log("Account created successfully, navigating to home");
+      toast.success("Account created successfully!");
+      
+      // Force a small delay before navigation to ensure state updates
+      setTimeout(() => {
+        navigate('/');
+      }, 100);
     } catch (error) {
       console.error("Registration error:", error);
-      toast("Failed to create account. Please try again.");
+      toast.error("Failed to create account. Please try again.");
+    } finally {
       setIsSubmitting(false);
     }
   };
@@ -129,8 +139,17 @@ const RegisterPage: React.FC = () => {
             disabled={isLoading || isSubmitting || !username.trim() || (useCustomId && !customDeviceId.trim())}
           >
             <span className="relative z-10 flex items-center justify-center">
-              {isSubmitting ? 'Creating account...' : 'Get Started'}
-              <ChevronRight className="ml-2 h-5 w-5" />
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                  Creating account...
+                </>
+              ) : (
+                <>
+                  Get Started
+                  <ChevronRight className="ml-2 h-5 w-5" />
+                </>
+              )}
             </span>
           </Button>
         </form>
