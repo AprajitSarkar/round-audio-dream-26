@@ -1,6 +1,6 @@
 
 import { initializeApp } from "firebase/app";
-import { getFirestore, enableIndexedDbPersistence, connectFirestoreEmulator } from "firebase/firestore";
+import { getFirestore, enableIndexedDbPersistence, connectFirestoreEmulator, CACHE_SIZE_UNLIMITED } from "firebase/firestore";
 import { getAuth, connectAuthEmulator } from "firebase/auth";
 
 const firebaseConfig = {
@@ -18,9 +18,16 @@ export const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = getFirestore(app);
 
+// Set up cache size to unlimited for better offline support
+db.settings({
+  cacheSizeBytes: CACHE_SIZE_UNLIMITED
+});
+
 // Enable offline persistence with better error handling
 try {
-  enableIndexedDbPersistence(db)
+  enableIndexedDbPersistence(db, {
+    forceOwnership: true // Try to take ownership of persistence to avoid multi-tab issues
+  })
     .then(() => {
       console.log("Firestore persistence has been enabled successfully");
     })
@@ -43,6 +50,12 @@ const connectionMonitoring = () => {
   // Log connection status for debugging
   window.addEventListener('online', () => {
     console.log('Browser is online, reconnecting to Firebase...');
+    // Force a refresh of any cached data when coming back online
+    db.clearPersistence().then(() => {
+      console.log("Firebase cache cleared for fresh data");
+    }).catch(err => {
+      console.warn("Could not clear persistence:", err);
+    });
   });
   
   window.addEventListener('offline', () => {

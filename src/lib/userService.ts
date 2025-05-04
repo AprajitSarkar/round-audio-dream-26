@@ -1,5 +1,5 @@
 
-import { doc, getDoc, setDoc, updateDoc, deleteDoc } from "firebase/firestore";
+import { doc, getDoc, setDoc, updateDoc, deleteDoc, serverTimestamp } from "firebase/firestore";
 import { db } from "./firebase";
 import { getDeviceId, setCustomDeviceId } from "./deviceUtils";
 
@@ -18,6 +18,8 @@ export interface UserData {
     voice: string;
     timestamp: string;
   }>;
+  createdAt?: any; // For serverTimestamp
+  updatedAt?: any; // For serverTimestamp
 }
 
 // Create new user
@@ -47,7 +49,9 @@ export const createUser = async (username: string, customDeviceId?: string): Pro
         rewarded: 0,
         interstitial: 0
       },
-      generationHistory: []
+      generationHistory: [],
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp()
     };
     
     console.log("Preparing to write user data to Firestore:", userData);
@@ -59,10 +63,14 @@ export const createUser = async (username: string, customDeviceId?: string): Pro
       
       if (docSnap.exists()) {
         console.log("User with this device ID already exists, updating...");
-        // Fix: Convert UserData to a plain object for Firestore compatibility
-        await updateDoc(docRef, {...userData});
+        // Convert userData to plain object and update
+        await updateDoc(docRef, {
+          ...userData,
+          updatedAt: serverTimestamp()
+        });
       } else {
         console.log("Creating new user document in Firestore");
+        // Create a new document
         await setDoc(docRef, userData);
       }
       
@@ -109,10 +117,14 @@ export const getUserData = async (): Promise<UserData | null> => {
         if (docSnap.exists()) {
           console.log("User data found in Firestore:", docSnap.data());
           return docSnap.data() as UserData;
+        } else {
+          console.log("No user document found in Firestore");
         }
       } catch (firestoreError) {
         console.error("Error accessing Firestore:", firestoreError);
       }
+    } else {
+      console.log("Offline: Will try to retrieve from local storage");
     }
     
     // If we're offline or Firestore failed, try to get from local storage
@@ -134,14 +146,35 @@ export const getUserData = async (): Promise<UserData | null> => {
 export const updateUserCredits = async (credits: number): Promise<void> => {
   try {
     const deviceId = await getDeviceId();
+    
+    if (!navigator.onLine) {
+      console.warn("You're offline. Credits update will be saved locally until connection is restored.");
+      const userData = JSON.parse(localStorage.getItem(`user_${deviceId}`) || '{}');
+      userData.credits = credits;
+      localStorage.setItem(`user_${deviceId}`, JSON.stringify(userData));
+      return;
+    }
+    
     const docRef = doc(db, "users", deviceId);
-    // Fix: Use object literal for updates
-    await updateDoc(docRef, { credits });
+    await updateDoc(docRef, { 
+      credits,
+      updatedAt: serverTimestamp() 
+    });
+    
+    // Update local storage as well
+    try {
+      const userData = JSON.parse(localStorage.getItem(`user_${deviceId}`) || '{}');
+      userData.credits = credits;
+      localStorage.setItem(`user_${deviceId}`, JSON.stringify(userData));
+    } catch (e) {
+      console.error("Error updating local storage:", e);
+    }
   } catch (error) {
     console.error("Error updating user credits:", error);
     if (!navigator.onLine) {
       console.warn("You're offline. Changes will be saved when you're back online.");
     }
+    throw error;
   }
 };
 
@@ -149,13 +182,35 @@ export const updateUserCredits = async (credits: number): Promise<void> => {
 export const updateUsername = async (username: string): Promise<void> => {
   try {
     const deviceId = await getDeviceId();
+    
+    if (!navigator.onLine) {
+      console.warn("You're offline. Username update will be saved locally until connection is restored.");
+      const userData = JSON.parse(localStorage.getItem(`user_${deviceId}`) || '{}');
+      userData.username = username;
+      localStorage.setItem(`user_${deviceId}`, JSON.stringify(userData));
+      return;
+    }
+    
     const docRef = doc(db, "users", deviceId);
-    await updateDoc(docRef, { username });
+    await updateDoc(docRef, { 
+      username,
+      updatedAt: serverTimestamp() 
+    });
+    
+    // Update local storage as well
+    try {
+      const userData = JSON.parse(localStorage.getItem(`user_${deviceId}`) || '{}');
+      userData.username = username;
+      localStorage.setItem(`user_${deviceId}`, JSON.stringify(userData));
+    } catch (e) {
+      console.error("Error updating local storage:", e);
+    }
   } catch (error) {
     console.error("Error updating username:", error);
     if (!navigator.onLine) {
       console.warn("You're offline. Changes will be saved when you're back online.");
     }
+    throw error;
   }
 };
 
@@ -179,12 +234,16 @@ export const changeDeviceId = async (newDeviceId: string): Promise<void> => {
     // Create new document with the same data but new device ID
     const userData = docSnap.data() as UserData;
     userData.deviceId = newDeviceId;
+    userData.updatedAt = serverTimestamp();
     
     // Create new document
     await setDoc(doc(db, "users", newDeviceId), userData);
     
     // Delete old document (optional - you might want to keep it as backup)
     // await deleteDoc(docRef);
+    
+    // Update local storage
+    localStorage.setItem(`user_${newDeviceId}`, JSON.stringify(userData));
   } catch (error) {
     console.error("Error changing device ID:", error);
     throw error;
@@ -215,7 +274,10 @@ export const addToHistory = async (
     
     if (navigator.onLine) {
       const docRef = doc(db, "users", deviceId);
-      await updateDoc(docRef, { generationHistory: limitedHistory });
+      await updateDoc(docRef, { 
+        generationHistory: limitedHistory,
+        updatedAt: serverTimestamp()
+      });
     } else {
       // Update local storage if offline
       userData.generationHistory = limitedHistory;
@@ -268,10 +330,11 @@ export const logAdWatch = async (
     
     if (canWatchAd) {
       const docRef = doc(db, "users", deviceId);
-      // Fix: Use object literal for updates
+      // Update with plain object
       await updateDoc(docRef, { 
         dailyAdsWatched,
-        credits: userData.credits + creditsToAdd 
+        credits: userData.credits + creditsToAdd,
+        updatedAt: serverTimestamp() 
       });
       return true;
     }
