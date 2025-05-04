@@ -2,7 +2,7 @@
 import { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'app.lovable.b96599e42dee48b0a5e5725d0f3fc740',
+  appId: 'com.hitmouse',
   appName: 'round-audio-dream',
   webDir: 'dist',
   bundledWebRuntime: false,

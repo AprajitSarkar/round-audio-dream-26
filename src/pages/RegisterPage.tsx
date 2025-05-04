@@ -56,11 +56,14 @@ const RegisterPage: React.FC = () => {
       console.log("Using device ID for registration:", finalDeviceId);
       
       await createNewUser(username.trim(), finalDeviceId);
-      console.log("Account created successfully, navigating to home");
+      console.log("Account created successfully");
       toast.success("Account created successfully!");
       
-      // Navigate to home page
-      navigate('/');
+      // Add a short delay to make sure Firebase write completes
+      setTimeout(() => {
+        console.log("Navigating to home page...");
+        navigate('/');
+      }, 500);
     } catch (error) {
       console.error("Registration error:", error);
       toast.error("Failed to create account. Please try again.");

@@ -1,4 +1,3 @@
-
 import { doc, getDoc, setDoc, updateDoc, deleteDoc } from "firebase/firestore";
 import { db } from "./firebase";
 import { getDeviceId, setCustomDeviceId } from "./deviceUtils";
@@ -24,6 +23,7 @@ export interface UserData {
 export const createUser = async (username: string, customDeviceId?: string): Promise<UserData> => {
   try {
     const deviceId = customDeviceId || await getDeviceId();
+    console.log("Creating user with deviceId:", deviceId);
     
     // If using custom device ID, set it in local storage
     if (customDeviceId) {
@@ -44,10 +44,21 @@ export const createUser = async (username: string, customDeviceId?: string): Pro
       generationHistory: []
     };
     
-    console.log("Creating user with data:", userData);
+    console.log("Preparing to write user data to Firestore:", userData);
     
-    await setDoc(doc(db, "users", deviceId), userData);
-    console.log("User created successfully in Firebase");
+    // Check if the document already exists
+    const docRef = doc(db, "users", deviceId);
+    const docSnap = await getDoc(docRef);
+    
+    if (docSnap.exists()) {
+      console.log("User with this device ID already exists, updating...");
+      await updateDoc(docRef, userData);
+    } else {
+      console.log("Creating new user document in Firestore");
+      await setDoc(docRef, userData);
+    }
+    
+    console.log("User created/updated successfully in Firebase");
     return userData;
   } catch (error) {
     console.error("Error in createUser:", error);
