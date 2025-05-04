@@ -1,4 +1,3 @@
-
 import { doc, getDoc, setDoc, updateDoc, deleteDoc } from "firebase/firestore";
 import { db } from "./firebase";
 import { getDeviceId } from "./deviceUtils";
@@ -21,8 +20,8 @@ export interface UserData {
 }
 
 // Create new user
-export const createUser = async (username: string): Promise<UserData> => {
-  const deviceId = await getDeviceId();
+export const createUser = async (username: string, customDeviceId?: string): Promise<UserData> => {
+  const deviceId = customDeviceId || await getDeviceId();
   const today = new Date().toISOString().split('T')[0];
   
   const userData: UserData = {
@@ -78,6 +77,34 @@ export const updateUsername = async (username: string): Promise<void> => {
     await updateDoc(docRef, { username });
   } catch (error) {
     console.error("Error updating username:", error);
+  }
+};
+
+// Change device ID (transfer account)
+export const changeDeviceId = async (newDeviceId: string): Promise<void> => {
+  try {
+    const currentDeviceId = await getDeviceId();
+    
+    // Get current user data
+    const docRef = doc(db, "users", currentDeviceId);
+    const docSnap = await getDoc(docRef);
+    
+    if (!docSnap.exists()) {
+      throw new Error("User data not found");
+    }
+    
+    // Create new document with the same data but new device ID
+    const userData = docSnap.data() as UserData;
+    userData.deviceId = newDeviceId;
+    
+    // Create new document
+    await setDoc(doc(db, "users", newDeviceId), userData);
+    
+    // Delete old document (optional - you might want to keep it as backup)
+    // await deleteDoc(docRef);
+  } catch (error) {
+    console.error("Error changing device ID:", error);
+    throw error;
   }
 };
 

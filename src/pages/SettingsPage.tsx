@@ -17,15 +17,18 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { updateUsername } from '@/lib/userService';
-import { User, LogOut, Trash2 } from 'lucide-react';
-import { toast } from '@/hooks/use-toast';
+import { updateUsername, changeDeviceId as updateDeviceId } from '@/lib/userService';
+import { setCustomDeviceId } from '@/lib/deviceUtils';
+import { User, LogOut, Trash2, Smartphone } from 'lucide-react';
+import { toast } from 'sonner';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 const SettingsPage: React.FC = () => {
-  const { user, logoutUser, deleteAccount, refreshUserData } = useUser();
+  const { user, logoutUser, deleteAccount, refreshUserData, changeDeviceId } = useUser();
   const [username, setUsername] = useState(user?.username || '');
+  const [newDeviceId, setNewDeviceId] = useState('');
   const [isUpdating, setIsUpdating] = useState(false);
+  const [isChangingDeviceId, setIsChangingDeviceId] = useState(false);
   const isMobile = useIsMobile();
   
   const handleUpdateUsername = async () => {
@@ -36,19 +39,31 @@ const SettingsPage: React.FC = () => {
     try {
       await updateUsername(username.trim());
       await refreshUserData();
-      toast({
-        title: "Username Updated",
-        description: "Your username has been updated successfully.",
-      });
+      toast("Your username has been updated successfully.");
     } catch (error) {
       console.error("Error updating username:", error);
-      toast({
-        title: "Error",
-        description: "Failed to update username.",
-        variant: "destructive",
-      });
+      toast("Failed to update username.");
     } finally {
       setIsUpdating(false);
+    }
+  };
+
+  const handleChangeDeviceId = async () => {
+    if (!newDeviceId.trim() || !user) return;
+    
+    setIsChangingDeviceId(true);
+    
+    try {
+      await updateDeviceId(newDeviceId.trim());
+      setCustomDeviceId(newDeviceId.trim());
+      await refreshUserData();
+      toast("Device ID changed successfully. You're now using this account on the new device ID.");
+      setNewDeviceId('');
+    } catch (error) {
+      console.error("Error changing device ID:", error);
+      toast("Failed to change device ID.");
+    } finally {
+      setIsChangingDeviceId(false);
     }
   };
   
@@ -88,19 +103,47 @@ const SettingsPage: React.FC = () => {
             </div>
             
             <div className="pt-4 border-t border-border">
-              <p className="text-sm text-muted-foreground mb-4">Device Information</p>
-              <div className="bg-card/50 p-4 rounded-lg">
+              <div className="flex items-center space-x-3 mb-4">
+                <Smartphone className="h-5 w-5 text-primary" />
+                <h2 className="text-base font-semibold">Device Management</h2>
+              </div>
+              
+              <div className="bg-card/50 p-4 rounded-lg mb-4">
                 <div className="flex justify-between items-center">
                   <div>
-                    <p className="text-sm font-medium">Device ID</p>
+                    <p className="text-sm font-medium">Current Device ID</p>
                     <p className="text-xs text-muted-foreground mt-1">
                       This is your unique device identifier
                     </p>
                   </div>
-                  <p className="text-xs bg-muted/40 p-2 rounded">
-                    {user?.deviceId?.substring(0, 8)}...
+                  <p className="text-xs bg-muted/40 p-2 rounded font-mono">
+                    {user?.deviceId || 'Not available'}
                   </p>
                 </div>
+              </div>
+              
+              <div className="space-y-2 mt-4">
+                <label htmlFor="newDeviceId" className="text-sm font-medium block">
+                  Change Device ID
+                </label>
+                <div className="flex space-x-2">
+                  <Input
+                    id="newDeviceId"
+                    className="bg-card/50"
+                    value={newDeviceId}
+                    onChange={(e) => setNewDeviceId(e.target.value)}
+                    placeholder="Enter new device ID"
+                  />
+                  <Button 
+                    onClick={handleChangeDeviceId}
+                    disabled={isChangingDeviceId || !newDeviceId.trim() || newDeviceId === user?.deviceId}
+                  >
+                    {isChangingDeviceId ? 'Changing...' : 'Change'}
+                  </Button>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Use this to transfer your account to another device. Enter the device ID of the other device.
+                </p>
               </div>
             </div>
           </div>

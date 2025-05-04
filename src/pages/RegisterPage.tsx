@@ -11,6 +11,8 @@ import { toast } from "sonner";
 const RegisterPage: React.FC = () => {
   const [username, setUsername] = useState('');
   const [deviceId, setDeviceId] = useState<string>('');
+  const [customDeviceId, setCustomDeviceId] = useState<string>('');
+  const [useCustomId, setUseCustomId] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { createNewUser, isLoading } = useUser();
   const navigate = useNavigate();
@@ -32,12 +34,23 @@ const RegisterPage: React.FC = () => {
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!username.trim()) return;
+    if (!username.trim()) {
+      toast("Please enter a username");
+      return;
+    }
     
-    setIsSubmitting(true);
-    await createNewUser(username.trim());
-    setIsSubmitting(false);
-    navigate('/');
+    try {
+      setIsSubmitting(true);
+      // Use the custom device ID if selected, otherwise use the detected one
+      const finalDeviceId = useCustomId && customDeviceId ? customDeviceId : deviceId;
+      await createNewUser(username.trim(), finalDeviceId);
+      setIsSubmitting(false);
+      navigate('/');
+    } catch (error) {
+      console.error("Registration error:", error);
+      toast("Failed to create account. Please try again.");
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -70,27 +83,50 @@ const RegisterPage: React.FC = () => {
           </div>
 
           <div className="space-y-2">
-            <label htmlFor="deviceId" className="text-sm font-medium">
-              Device ID (automatic)
-            </label>
-            <Input
-              id="deviceId"
-              type="text"
-              value={deviceId}
-              placeholder="Loading device ID..."
-              className="input-cute h-12 text-muted-foreground"
-              disabled
-              title="This ID is automatically generated for your device"
-            />
+            <div className="flex items-center justify-between">
+              <label htmlFor="deviceId" className="text-sm font-medium">
+                Device ID
+              </label>
+              <button
+                type="button"
+                onClick={() => setUseCustomId(!useCustomId)}
+                className="text-xs text-primary hover:text-accent underline"
+              >
+                {useCustomId ? "Use automatic ID" : "Use custom ID"}
+              </button>
+            </div>
+            
+            {useCustomId ? (
+              <Input
+                id="customDeviceId"
+                type="text"
+                value={customDeviceId}
+                onChange={(e) => setCustomDeviceId(e.target.value)}
+                placeholder="Enter custom device ID"
+                className="input-cute h-12"
+              />
+            ) : (
+              <Input
+                id="deviceId"
+                type="text"
+                value={deviceId}
+                placeholder="Loading device ID..."
+                className="input-cute h-12 text-muted-foreground"
+                disabled
+                title="This ID is automatically generated for your device"
+              />
+            )}
             <p className="text-xs text-muted-foreground">
-              This unique ID identifies your device for authentication
+              {useCustomId 
+                ? "Enter a custom device ID if you want to use an existing account" 
+                : "This unique ID identifies your device for authentication"}
             </p>
           </div>
           
           <Button 
             type="submit" 
             className="cute-btn w-full h-12 text-base font-medium"
-            disabled={isLoading || isSubmitting || !username.trim()}
+            disabled={isLoading || isSubmitting || !username.trim() || (useCustomId && !customDeviceId.trim())}
           >
             <span className="relative z-10 flex items-center justify-center">
               {isSubmitting ? 'Creating account...' : 'Get Started'}

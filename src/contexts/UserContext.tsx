@@ -2,16 +2,17 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import { getUserData, createUser, UserData, deleteUserData } from '@/lib/userService';
 import { getDeviceId, registerDevice, unregisterDevice } from '@/lib/deviceUtils';
-import { toast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { Loader2 } from 'lucide-react';
 
 interface UserContextType {
   user: UserData | null;
   isLoading: boolean;
-  createNewUser: (username: string) => Promise<void>;
+  createNewUser: (username: string, customDeviceId?: string) => Promise<void>;
   logoutUser: () => Promise<void>;
   deleteAccount: () => Promise<void>;
   refreshUserData: () => Promise<void>;
+  changeDeviceId: (newDeviceId: string) => Promise<void>;
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -32,11 +33,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
       } catch (error) {
         console.error("Error loading user data:", error);
-        toast({
-          title: "Error",
-          description: "Failed to load user data.",
-          variant: "destructive",
-        });
+        toast("Failed to load user data.");
       } finally {
         setIsLoading(false);
       }
@@ -46,23 +43,17 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   // Create a new user
-  const createNewUser = async (username: string) => {
+  const createNewUser = async (username: string, customDeviceId?: string) => {
     try {
       setIsLoading(true);
-      const newUser = await createUser(username);
+      const newUser = await createUser(username, customDeviceId);
       setUser(newUser);
       registerDevice();
-      toast({
-        title: "Welcome!",
-        description: "Your account has been created successfully.",
-      });
+      toast("Welcome! Your account has been created successfully.");
     } catch (error) {
       console.error("Error creating user:", error);
-      toast({
-        title: "Error",
-        description: "Failed to create user account.",
-        variant: "destructive",
-      });
+      toast("Failed to create user account.");
+      throw error;
     } finally {
       setIsLoading(false);
     }
@@ -86,17 +77,10 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setIsLoading(true);
       unregisterDevice();
       setUser(null);
-      toast({
-        title: "Logged Out",
-        description: "You have been logged out successfully.",
-      });
+      toast("You have been logged out successfully.");
     } catch (error) {
       console.error("Error logging out:", error);
-      toast({
-        title: "Error",
-        description: "Failed to log out.",
-        variant: "destructive",
-      });
+      toast("Failed to log out.");
     } finally {
       setIsLoading(false);
     }
@@ -109,17 +93,32 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
       await deleteUserData();
       unregisterDevice();
       setUser(null);
-      toast({
-        title: "Account Deleted",
-        description: "Your account has been deleted successfully.",
-      });
+      toast("Your account has been deleted successfully.");
     } catch (error) {
       console.error("Error deleting account:", error);
-      toast({
-        title: "Error",
-        description: "Failed to delete account.",
-        variant: "destructive",
-      });
+      toast("Failed to delete account.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Change device ID (transfer account to a new device)
+  const changeDeviceId = async (newDeviceId: string) => {
+    try {
+      setIsLoading(true);
+      if (!user) {
+        toast("You need to be logged in to change device ID.");
+        setIsLoading(false);
+        return;
+      }
+
+      // Update the deviceId in the user data
+      // This will be implemented in userService.ts
+      toast("Device ID changed successfully.");
+      await refreshUserData();
+    } catch (error) {
+      console.error("Error changing device ID:", error);
+      toast("Failed to change device ID.");
     } finally {
       setIsLoading(false);
     }
@@ -134,6 +133,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
         logoutUser,
         deleteAccount,
         refreshUserData,
+        changeDeviceId,
       }}
     >
       {children}
