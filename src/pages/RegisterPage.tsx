@@ -14,8 +14,16 @@ const RegisterPage: React.FC = () => {
   const [customDeviceId, setCustomDeviceId] = useState<string>('');
   const [useCustomId, setUseCustomId] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { createNewUser, isLoading } = useUser();
+  const { createNewUser, user, isLoading } = useUser();
   const navigate = useNavigate();
+
+  // If user is already logged in, redirect to home
+  useEffect(() => {
+    if (user) {
+      console.log("User already logged in, redirecting to home page");
+      navigate('/');
+    }
+  }, [user, navigate]);
 
   useEffect(() => {
     // Get device ID on component mount
@@ -26,7 +34,7 @@ const RegisterPage: React.FC = () => {
         console.log("Device ID fetched:", id);
       } catch (error) {
         console.error("Error fetching device ID:", error);
-        toast("Could not retrieve device ID. Using fallback ID.");
+        toast.error("Could not retrieve device ID. Using fallback ID.");
       }
     };
 
@@ -36,7 +44,7 @@ const RegisterPage: React.FC = () => {
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!username.trim()) {
-      toast("Please enter a username");
+      toast.error("Please enter a username");
       return;
     }
     
@@ -51,17 +59,26 @@ const RegisterPage: React.FC = () => {
       console.log("Account created successfully, navigating to home");
       toast.success("Account created successfully!");
       
-      // Force a small delay before navigation to ensure state updates
-      setTimeout(() => {
-        navigate('/');
-      }, 100);
+      // Navigate to home page
+      navigate('/');
     } catch (error) {
       console.error("Registration error:", error);
       toast.error("Failed to create account. Please try again.");
-    } finally {
       setIsSubmitting(false);
     }
   };
+
+  // Loading state while UserContext is initializing
+  if (isLoading && !isSubmitting) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-background p-4">
+        <div className="glass p-8 rounded-3xl max-w-md w-full space-y-8 flex flex-col items-center">
+          <Loader2 className="h-12 w-12 text-primary animate-spin" />
+          <p>Initializing application...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-background p-4">

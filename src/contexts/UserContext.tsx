@@ -47,7 +47,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   // Create a new user
-  const createNewUser = async (username: string, customDeviceId?: string) => {
+  const createNewUser = async (username: string, customDeviceId?: string): Promise<void> => {
     try {
       console.log("Creating new user in UserContext:", { username, customDeviceId });
       setIsLoading(true);
@@ -56,7 +56,6 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(newUser);
       registerDevice();
       toast.success("Welcome! Your account has been created successfully.");
-      return newUser; // Return the user data for further processing if needed
     } catch (error) {
       console.error("Error creating user in UserContext:", error);
       toast.error("Failed to create user account.");
@@ -67,19 +66,17 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   // Refresh user data
-  const refreshUserData = async () => {
+  const refreshUserData = async (): Promise<void> => {
     try {
       console.log("Refreshing user data...");
       const userData = await getUserData();
       if (userData) {
         console.log("User data refreshed:", userData);
         setUser(userData);
-        return userData;
       }
     } catch (error) {
       console.error("Error refreshing user data:", error);
     }
-    return null;
   };
 
   // Logout user
