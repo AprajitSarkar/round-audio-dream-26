@@ -1,3 +1,4 @@
+
 import { doc, getDoc, setDoc, updateDoc, deleteDoc } from "firebase/firestore";
 import { db } from "./firebase";
 import { getDeviceId, setCustomDeviceId } from "./deviceUtils";
@@ -58,7 +59,8 @@ export const createUser = async (username: string, customDeviceId?: string): Pro
       
       if (docSnap.exists()) {
         console.log("User with this device ID already exists, updating...");
-        await updateDoc(docRef, userData);
+        // Fix: Convert UserData to a plain object for Firestore compatibility
+        await updateDoc(docRef, {...userData});
       } else {
         console.log("Creating new user document in Firestore");
         await setDoc(docRef, userData);
@@ -118,12 +120,12 @@ export const getUserData = async (): Promise<UserData | null> => {
   }
 };
 
-// The rest of your functions remain the same, just logging if we're offline
 // Update user credits
 export const updateUserCredits = async (credits: number): Promise<void> => {
   try {
     const deviceId = await getDeviceId();
     const docRef = doc(db, "users", deviceId);
+    // Fix: Use object literal for updates
     await updateDoc(docRef, { credits });
   } catch (error) {
     console.error("Error updating user credits:", error);
@@ -256,6 +258,7 @@ export const logAdWatch = async (
     
     if (canWatchAd) {
       const docRef = doc(db, "users", deviceId);
+      // Fix: Use object literal for updates
       await updateDoc(docRef, { 
         dailyAdsWatched,
         credits: userData.credits + creditsToAdd 
