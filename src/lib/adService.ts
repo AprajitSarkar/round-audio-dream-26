@@ -55,11 +55,7 @@ export const showRewardedAd = async (): Promise<boolean> => {
         'rewarded_video_load_fail',
         (info) => {
           console.error('Failed to load rewarded ad:', info);
-          toast({
-            title: "Ad Error",
-            description: "Failed to load reward ad. Please try again later.",
-            variant: "destructive",
-          });
+          toast("Failed to load reward ad. Please try again later.");
           rewardedAdFailHandler.remove();
           resolve(false);
         }
@@ -72,11 +68,7 @@ export const showRewardedAd = async (): Promise<boolean> => {
       
     } catch (error) {
       console.error('Error showing rewarded ad:', error);
-      toast({
-        title: "Ad Error",
-        description: "Something went wrong when showing the ad.",
-        variant: "destructive",
-      });
+      toast("Something went wrong when showing the ad.");
       resolve(false);
     }
   });
@@ -105,11 +97,7 @@ export const showInterstitialAd = async (): Promise<boolean> => {
         'interstitial_load_fail',
         (info) => {
           console.error('Failed to load interstitial ad:', info);
-          toast({
-            title: "Ad Error",
-            description: "Failed to load ad. Please try again later.",
-            variant: "destructive",
-          });
+          toast("Failed to load ad. Please try again later.");
           interstitialAdFailHandler.remove();
           resolve(false);
         }
@@ -122,11 +110,7 @@ export const showInterstitialAd = async (): Promise<boolean> => {
       
     } catch (error) {
       console.error('Error showing interstitial ad:', error);
-      toast({
-        title: "Ad Error",
-        description: "Something went wrong when showing the ad.",
-        variant: "destructive",
-      });
+      toast("Something went wrong when showing the ad.");
       resolve(false);
     }
   });
