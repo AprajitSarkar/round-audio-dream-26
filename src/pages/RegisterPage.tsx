@@ -44,7 +44,7 @@ const RegisterPage: React.FC = () => {
     <div className="min-h-screen flex flex-col items-center justify-center bg-background p-4">
       <div className="glass p-8 rounded-3xl max-w-md w-full space-y-8">
         <div className="text-center">
-          <div className="mx-auto w-20 h-20 bg-gradient-to-r from-primary to-accent rounded-full flex items-center justify-center mb-5 shadow-lg shadow-primary/20">
+          <div className="mx-auto w-20 h-20 bg-gradient-to-r from-primary to-accent rounded-full flex items-center justify-center mb-5 shadow-lg shadow-accent/20">
             <Mic className="h-10 w-10 text-white" />
           </div>
           <h2 className="text-2xl font-bold glow-text">Welcome to Voice Generator</h2>
