@@ -1,6 +1,10 @@
 
-import { AdMob } from '@admob-plus/capacitor';
-import { toast } from '@/hooks/use-toast';
+// Alternative import approach
+import { Capacitor } from '@capacitor/core';
+import '@admob-plus/capacitor';
+
+// Access AdMob plugin through Capacitor.Plugins
+const AdMob = Capacitor.Plugins.AdMob;
 
 const REWARDED_AD_UNIT = 'ca-app-pub-3279473081670891/7308583729';
 const INTERSTITIAL_AD_UNIT = 'ca-app-pub-3279473081670891/5078157857';
