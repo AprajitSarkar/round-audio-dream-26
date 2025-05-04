@@ -12,7 +12,7 @@ const DownloadButton: React.FC<DownloadButtonProps> = ({ onClick, disabled = fal
     <Button
       onClick={onClick}
       disabled={disabled}
-      className="bg-gradient-to-r from-green-500 to-emerald-600 hover:opacity-90 transition-opacity text-white w-full"
+      className="bg-gradient-to-r from-green-500 to-emerald-600 hover:opacity-90 transition-opacity text-white w-full rounded-full"
     >
       <svg
         xmlns="http://www.w3.org/2000/svg"

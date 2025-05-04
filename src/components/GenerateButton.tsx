@@ -12,7 +12,7 @@ const GenerateButton: React.FC<GenerateButtonProps> = ({ onClick, isLoading }) =
     <Button
       onClick={onClick}
       disabled={isLoading}
-      className="relative overflow-hidden bg-transparent border-transparent before:absolute before:inset-0 before:bg-glow-btn before:bg-size-200 before:animate-border-flow before:duration-1000 text-white"
+      className="relative overflow-hidden bg-transparent border-transparent before:absolute before:inset-0 before:bg-glow-btn before:bg-size-200 before:animate-border-flow before:duration-1000 text-white rounded-full"
     >
       <span className="relative z-10 flex items-center space-x-2">
         {isLoading ? (
