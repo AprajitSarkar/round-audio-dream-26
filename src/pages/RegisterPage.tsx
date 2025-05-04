@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useUser } from '@/contexts/UserContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Mic, ChevronRight, Loader2 } from 'lucide-react';
+import { Mic, ChevronRight, Loader2, WifiOff } from 'lucide-react';
 import { getDeviceId } from '@/lib/deviceUtils';
 import { toast } from "sonner";
 
@@ -14,8 +14,30 @@ const RegisterPage: React.FC = () => {
   const [customDeviceId, setCustomDeviceId] = useState<string>('');
   const [useCustomId, setUseCustomId] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isOnline, setIsOnline] = useState<boolean>(navigator.onLine);
   const { createNewUser, user, isLoading } = useUser();
   const navigate = useNavigate();
+
+  // Monitor online status
+  useEffect(() => {
+    const handleOnline = () => {
+      setIsOnline(true);
+      toast.success("You're back online!");
+    };
+    
+    const handleOffline = () => {
+      setIsOnline(false);
+      toast.error("You're offline. Check your internet connection.");
+    };
+    
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+    
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
 
   // If user is already logged in, redirect to home
   useEffect(() => {
@@ -45,6 +67,11 @@ const RegisterPage: React.FC = () => {
     e.preventDefault();
     if (!username.trim()) {
       toast.error("Please enter a username");
+      return;
+    }
+    
+    if (!isOnline) {
+      toast.error("You're offline. Please check your internet connection and try again.");
       return;
     }
     
@@ -85,6 +112,13 @@ const RegisterPage: React.FC = () => {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-background p-4">
+      {!isOnline && (
+        <div className="fixed top-0 left-0 right-0 bg-red-600 text-white p-2 text-center flex items-center justify-center z-50">
+          <WifiOff className="w-4 h-4 mr-2" />
+          You're offline. Please check your internet connection.
+        </div>
+      )}
+      
       <div className="glass p-8 rounded-3xl max-w-md w-full space-y-8">
         <div className="text-center">
           <div className="mx-auto w-20 h-20 bg-gradient-to-r from-primary to-accent rounded-full flex items-center justify-center mb-5 shadow-lg shadow-accent/20">
@@ -156,7 +190,7 @@ const RegisterPage: React.FC = () => {
           <Button 
             type="submit" 
             className="cute-btn w-full h-12 text-base font-medium"
-            disabled={isLoading || isSubmitting || !username.trim() || (useCustomId && !customDeviceId.trim())}
+            disabled={isLoading || isSubmitting || !username.trim() || (useCustomId && !customDeviceId.trim()) || !isOnline}
           >
             <span className="relative z-10 flex items-center justify-center">
               {isSubmitting ? (

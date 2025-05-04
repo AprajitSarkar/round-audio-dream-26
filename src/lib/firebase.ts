@@ -1,7 +1,7 @@
 
 import { initializeApp } from "firebase/app";
-import { getFirestore } from "firebase/firestore";
-import { getAuth } from "firebase/auth";
+import { getFirestore, enableIndexedDbPersistence, connectFirestoreEmulator } from "firebase/firestore";
+import { getAuth, connectAuthEmulator } from "firebase/auth";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDSq9TbdLhJ-m9Ov3ZCRotwhrBWOFFAVUE",
@@ -17,5 +17,32 @@ const firebaseConfig = {
 export const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = getFirestore(app);
+
+// Enable offline persistence
+enableIndexedDbPersistence(db)
+  .catch((err) => {
+    console.error("Firebase persistence error:", err.code, err.message);
+    if (err.code === 'failed-precondition') {
+      console.warn('Multiple tabs open, persistence can only be enabled in one tab at a time.');
+    } else if (err.code === 'unimplemented') {
+      console.warn('The current browser does not support all of the features required to enable persistence');
+    }
+  });
+
+// Debug Firebase connection status
+const connectionMonitoring = () => {
+  console.log("Checking Firebase connection status...");
+  // Log connection status for debugging
+  window.addEventListener('online', () => {
+    console.log('Browser is online, reconnecting to Firebase...');
+  });
+  
+  window.addEventListener('offline', () => {
+    console.log('Browser is offline, Firebase operations may fail');
+  });
+};
+
+// Run connection monitoring 
+connectionMonitoring();
 
 console.log("Firebase initialized with project:", firebaseConfig.projectId);

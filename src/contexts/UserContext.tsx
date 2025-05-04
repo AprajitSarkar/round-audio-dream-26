@@ -37,7 +37,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
       } catch (error) {
         console.error("Error loading user data:", error);
-        toast.error("Failed to load user data.");
+        toast.error("Failed to load user data. Check your internet connection.");
       } finally {
         setIsLoading(false);
       }
@@ -51,6 +51,14 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       console.log("Creating new user in UserContext:", { username, customDeviceId });
       setIsLoading(true);
+      
+      // Check online status
+      if (!navigator.onLine) {
+        toast.error("You appear to be offline. Please check your internet connection.");
+        setIsLoading(false);
+        return;
+      }
+      
       const newUser = await createUser(username, customDeviceId);
       console.log("New user created:", newUser);
       setUser(newUser);
@@ -58,7 +66,11 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
       toast.success("Welcome! Your account has been created successfully.");
     } catch (error) {
       console.error("Error creating user in UserContext:", error);
-      toast.error("Failed to create user account.");
+      if ((error as any)?.code === 'unavailable') {
+        toast.error("Network error: Unable to connect to database. Please check your internet connection and try again.");
+      } else {
+        toast.error("Failed to create user account. Please try again later.");
+      }
       throw error;
     } finally {
       setIsLoading(false);
